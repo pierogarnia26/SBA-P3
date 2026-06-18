@@ -28,22 +28,41 @@
         <p id="result"></p>
     </div>
     <script>
-        function updateInputs() {
-            const shape = document.getElementById('shape').value;
-            const v2 = document.getElementById('val2');
-            if (shape === 'triangle') { v2.style.display = 'block'; }
-            else { v2.style.display = 'none'; }
+    function updateInputs() {
+        const shape = document.getElementById('shape').value;
+        const v2 = document.getElementById('val2');
+        if (shape === 'triangle') { v2.style.display = 'block'; }
+        else { v2.style.display = 'none'; }
+    }
+
+    async function calculate() {
+        const shape = document.getElementById('shape').value;
+        const val1 = parseFloat(document.getElementById('val1').value);
+        const val2 = parseFloat(document.getElementById('val2').value);
+
+        let data = {};
+        if (shape === 'square') data = { side: val1 };
+        else if (shape === 'triangle') data = { base: val1, height: val2 };
+        else if (shape === 'circle') data = { radius: val1 };
+
+        const apiUrl = 'https://melih-calculator-b8auhkathkd0d9dx.polandcentral-01.azurewebsites.net/api/CalculateArea';
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ shape: shape, data: data })
+            });
+
+            if (!response.ok) throw new Error("Server error");
+
+            const result = await response.json();
+            document.getElementById('result').innerText = "Result: " + result.area.toFixed(2);
+        } catch (error) {
+            document.getElementById('result').innerText = "Connection error";
+            console.error("Error details:", error);
         }
-        function calculate() {
-            const shape = document.getElementById('shape').value;
-            const v1 = parseFloat(document.getElementById('val1').value);
-            const v2 = parseFloat(document.getElementById('val2').value);
-            let area = 0;
-            if (shape === 'square') area = v1 * v1;
-            if (shape === 'triangle') area = 0.5 * v1 * v2;
-            if (shape === 'circle') area = Math.PI * Math.pow(v1, 2);
-            document.getElementById('result').innerText = isNaN(area) ? "Enter valid numbers" : "Result: " + area.toFixed(2);
-        }
-    </script>
+    }
+</script>
 </body>
 </html>
